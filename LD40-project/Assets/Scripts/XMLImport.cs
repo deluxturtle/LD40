@@ -10,25 +10,12 @@ using System.Xml;
 /// </summary>
 public class XMLImport : MonoBehaviour {
 
+
     TextAsset xmlFile;
     Sprite[] sprites;
-    string spriteSheetName;
     int layerWidth;
     int layerHeight;
 
-    /// <summary>
-    /// Uses sprite sheet to import sprites to game engine.
-    /// </summary>
-    /// <param name="sheet">Sprite Sheet to Use for import.</param>
-	public void LoadNewLevel(TextAsset pxmlFile, string pSpriteSheetName)
-    {
-        ClearLevel();
-        xmlFile = pxmlFile;
-        spriteSheetName = pSpriteSheetName;
-
-        StartCoroutine("LoadTiles");
-
-    }
 
     void ClearLevel()
     {
@@ -40,8 +27,12 @@ public class XMLImport : MonoBehaviour {
     /// Goes though one by one in the layers to import them into sprite objects for unity.
     /// </summary>
     /// <returns></returns>
-    IEnumerator LoadTiles()
+    public IEnumerator LoadTiles(TextAsset pxmlFile)
     {
+        ClearLevel();
+        xmlFile = pxmlFile;
+        string spriteSheetName = "LevelSpriteSheet";
+
         try
         {
             sprites = Resources.LoadAll<Sprite>(spriteSheetName);
@@ -75,7 +66,7 @@ public class XMLImport : MonoBehaviour {
             int verticalIndex = layerHeight - 1;
             int horizontalIndex = 0;
 
-            foreach(XmlNode tile in tempNode.SelectSingleNode("tile"))
+            foreach(XmlNode tile in tempNode)
             {
                 int spriteValue = int.Parse(tile.Attributes["gid"].Value);
 
@@ -106,21 +97,24 @@ public class XMLImport : MonoBehaviour {
                     {
 
                     }
-
-
-                    horizontalIndex++;
-                    if (horizontalIndex % layerWidth == 0)
+                    else if (layerInfo.Attributes["name"].Value == "Wall")
                     {
-                        //Increase our vertical location
-                        verticalIndex--;
-                        //reset our horizontal location
-                        horizontalIndex = 0;
+                        tempSprite.AddComponent<BoxCollider2D>();
                     }
+                    
 
+                }
+                horizontalIndex++;
+                if (horizontalIndex % layerWidth == 0)
+                {
+                    //Increase our vertical location
+                    verticalIndex--;
+                    //reset our horizontal location
+                    horizontalIndex = 0;
+                    yield return null; // Take a frame to update UI
                 }
             }
         }
-
         yield return null;
     }
 }
