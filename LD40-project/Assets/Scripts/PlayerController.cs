@@ -16,8 +16,12 @@ public class PlayerController : MonoBehaviour {
     {
         HandleInput();
 
-        transform.position += (Vector3)inputVector * speed * Time.deltaTime;
 	}
+
+    private void FixedUpdate()
+    {
+        transform.position += (Vector3)inputVector * speed * Time.deltaTime;
+    }
 
     void HandleInput()
     {
