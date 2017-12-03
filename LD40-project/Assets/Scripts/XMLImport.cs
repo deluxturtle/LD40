@@ -10,17 +10,26 @@ using System.Xml;
 /// </summary>
 public class XMLImport : MonoBehaviour {
 
+    //Publics
+    [Tooltip("Player prefab to spawn on the spawnpoint.")]
+    public GameObject playerPrefab;
+    [Tooltip("Goal prefab to mark the end of the game.")]
+    public GameObject goalPrefab;
 
+    //Privates
     TextAsset xmlFile;
     Sprite[] sprites;
     int layerWidth;
     int layerHeight;
 
+    const int GOAL = 3;
+    const int SPAWN = 18;
+    
 
     void ClearLevel()
     {
         //Delete everything!
-        Debug.Log("Haven't cleared level yet!");
+        Debug.Log("Haven't programmed deletion yet!");
     }
 
     /// <summary>
@@ -100,6 +109,22 @@ public class XMLImport : MonoBehaviour {
                     else if (layerInfo.Attributes["name"].Value == "Wall")
                     {
                         tempSprite.AddComponent<BoxCollider2D>();
+                    }
+                    else if(layerInfo.Attributes["name"].Value == "Object")
+                    {
+                        switch (spriteValue)
+                        {
+                            case GOAL:
+                                Instantiate(goalPrefab, tempSprite.transform.position, Quaternion.identity);
+                                Destroy(tempSprite);
+                                break;
+                            case SPAWN:
+                                Instantiate(playerPrefab, tempSprite.transform.position, Quaternion.identity);
+                                Destroy(tempSprite);
+                                break;
+                            default:
+                                break;
+                        }
                     }
                     
 
