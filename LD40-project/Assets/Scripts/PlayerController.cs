@@ -11,12 +11,10 @@ public class PlayerController : MonoBehaviour {
     public float walkSpeed = 3f;
     public float runSpeed = 6f;
     public float interactDistance = 2f;
+    
+    public GameObject toolTip;
 
-    public List<AudioClip> footSteps = new List<AudioClip>();
-
-    public GameObject toolTipCanvasPrefab;
-    public GameObject soundCrumbPrefab;
-
+    Animator animator;
     GameObject toolTipCanvas;
     float speed;
     Vector2 inputVector;
@@ -25,9 +23,10 @@ public class PlayerController : MonoBehaviour {
 
     private void Start()
     {
+        toolTip = GameObject.FindGameObjectWithTag("ToolTip");
+        animator = GetComponentInChildren<Animator>();
         Camera.main.GetComponent<CameraFollow>().SetTarget(transform);
-        toolTipCanvas = Instantiate(toolTipCanvasPrefab);
-        toolTipCanvas.SetActive(false);
+        toolTip.SetActive(false);
     }
 
     // Update is called once per frame
@@ -35,33 +34,63 @@ public class PlayerController : MonoBehaviour {
     {
         HandleInput();
 
+        
+
+
         if (running)
         {
             speed = runSpeed;
+            animator.SetFloat("moveSpeed", 6);//These didn't go the way i planned but it will work.. :/
         }
         else
         {
             speed = walkSpeed;
+            animator.SetFloat("moveSpeed", 3);
         }
 
-        //Currently no facing is needed. 
-        if(!running)
+        if(inputVector.magnitude <= 0.1f)
         {
+            animator.SetFloat("moveSpeed", 0);
+        }
+
+
+
+        //Pick up things
+        if (!running)
+        {
+            GameObject closest = null;
             foreach (GameObject interactable in GameObject.FindGameObjectsWithTag("Interactable"))
             {
-                if(Vector2.Distance(interactable.transform.position, transform.position) < interactDistance)
+                if(closest == null)
                 {
-                    toolTipCanvas.transform.position = (Vector2)interactable.transform.position + new Vector2(0, 0.5f);
-                    toolTipCanvas.SetActive(true);
-                    if(interact)
-                        interactable.GetComponent<Interactable>().DoInteract();
+                    closest = interactable;
+                }
+                else if( Vector2.Distance(transform.position, interactable.transform.position) < Vector2.Distance(closest.transform.position, transform.position))
+                {
+                    closest = interactable;
+                }
+
+
+                if(Vector2.Distance(closest.transform.position, transform.position) < interactDistance)
+                {
+                    if (closest.GetComponent<Interactable>().isInteractable)
+                    {
+                        toolTip.transform.position = (Vector2)closest.transform.position + new Vector2(0, -0.5f);
+                        toolTip.SetActive(true);
+                        if (interact)
+                        {
+                            closest.GetComponent<Interactable>().DoInteract();
+                            toolTip.SetActive(false);
+                        }
+
+
+                    }
 
                 }
                 else
                 {
-                    toolTipCanvas.SetActive(false);
+                    toolTip.SetActive(false);
                 }
-                break;
             }
         }
 
@@ -79,7 +108,7 @@ public class PlayerController : MonoBehaviour {
 
 
         inputVector = new Vector2(horizontal, vertical);
-        if(inputVector.magnitude > 1)
+        if (inputVector.magnitude > 1)
         {
             inputVector.Normalize();
         }
@@ -95,11 +124,5 @@ public class PlayerController : MonoBehaviour {
             interact = false;
     }
     
-    void CreateSoundCrumb(AudioClip pClip, float pVolume)
-    {
-        AudioSource source = Instantiate(soundCrumbPrefab).GetComponent<AudioSource>();
-        source.volume = pVolume;
-        source.clip = pClip;
-        source.Play();
-    }
+
 }

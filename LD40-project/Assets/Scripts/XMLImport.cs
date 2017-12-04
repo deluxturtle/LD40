@@ -15,6 +15,8 @@ public class XMLImport : MonoBehaviour {
     public GameObject playerPrefab;
     [Tooltip("Goal prefab to mark the end of the game.")]
     public GameObject goalPrefab;
+    public GameObject fakePrefab;
+    List<GameObject> currentLevelObjects = new List<GameObject>();
 
     //Privates
     TextAsset xmlFile;
@@ -22,14 +24,21 @@ public class XMLImport : MonoBehaviour {
     int layerWidth;
     int layerHeight;
 
-    const int GOAL = 3;
+    const int GOAL = 33;
+    const int FAKE = 4;
     const int SPAWN = 18;
     
 
-    void ClearLevel()
+    public IEnumerator DeleteMap()
     {
-        //Delete everything!
-        Debug.Log("Haven't programmed deletion yet!");
+        while (currentLevelObjects.Count > 0)
+        {
+            GameObject objToRemove = currentLevelObjects[0];
+            currentLevelObjects.Remove(objToRemove);
+            Destroy(objToRemove);
+            yield return null;
+        }
+        currentLevelObjects = new List<GameObject>();
     }
 
     /// <summary>
@@ -38,7 +47,7 @@ public class XMLImport : MonoBehaviour {
     /// <returns></returns>
     public IEnumerator LoadTiles(TextAsset pxmlFile)
     {
-        ClearLevel();
+        yield return StartCoroutine(DeleteMap());
         xmlFile = pxmlFile;
         string spriteSheetName = "LevelSpriteSheet";
 
@@ -115,18 +124,25 @@ public class XMLImport : MonoBehaviour {
                         switch (spriteValue)
                         {
                             case GOAL:
-                                Instantiate(goalPrefab, tempSprite.transform.position, Quaternion.identity);
+                                GameObject tempGoal = Instantiate(goalPrefab, tempSprite.transform.position, Quaternion.identity);
                                 Destroy(tempSprite);
+                                currentLevelObjects.Add(tempGoal);
                                 break;
                             case SPAWN:
-                                Instantiate(playerPrefab, tempSprite.transform.position, Quaternion.identity);
+                                GameObject tempPlayer = Instantiate(playerPrefab, tempSprite.transform.position, Quaternion.identity);
+                                Destroy(tempSprite);
+                                currentLevelObjects.Add(tempPlayer);
+                                break;
+                            case FAKE:
+                                GameObject tempFake = Instantiate(fakePrefab, tempSprite.transform.position, Quaternion.identity);
+                                currentLevelObjects.Add(tempFake);
                                 Destroy(tempSprite);
                                 break;
                             default:
                                 break;
                         }
                     }
-                    
+                    currentLevelObjects.Add(tempSprite);
 
                 }
                 horizontalIndex++;

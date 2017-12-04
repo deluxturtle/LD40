@@ -11,11 +11,18 @@ public class GameDirector : MonoBehaviour
 {
     public Camera mainCamera;
     public Image fadeToBlackPanel;
+    public Image winPanel;
     public GameObject loadingText;
     //public List<TextAsset> levels = new List<TextAsset>();
     public TextAsset mapInformation;
+    public AudioClip backgroundMusic;
+    public List<TextAsset> levels = new List<TextAsset>();
+
     int currentLevel = 0;
     XMLImport levelImporter;
+    AudioSource audioSource;
+
+
 
 
     //Start level
@@ -32,9 +39,17 @@ public class GameDirector : MonoBehaviour
         
     private void Start()
     {
+
+        audioSource = GetComponent<AudioSource>();
         mainCamera = Camera.main;
         levelImporter = GetComponent<XMLImport>();
         StartLevelProcess();
+
+        if(backgroundMusic != null)
+        {
+            audioSource.clip = backgroundMusic;
+            audioSource.Play();
+        }
     }
 
     public void StartLevelProcess()
@@ -45,7 +60,7 @@ public class GameDirector : MonoBehaviour
     IEnumerator LoadLevelProcess()
     {
         loadingText.SetActive(true);
-        yield return StartCoroutine(levelImporter.LoadTiles(mapInformation));
+        yield return StartCoroutine(levelImporter.LoadTiles(levels[currentLevel]));
         //Level is done do some pre stuff before showing the level.
         
         loadingText.SetActive(false);
@@ -53,9 +68,28 @@ public class GameDirector : MonoBehaviour
         FadeIn(1);
     }
 
-    public void EndLevelProcess()
+    public IEnumerator EndLevelProcess()
     {
+        currentLevel++;
         FadeOut(1);
+        yield return new WaitForSeconds(1);
+
+        //LoadNextLevel
+        if(levels.Count -1 < currentLevel)
+        {
+            EndOfGame();
+        }
+        else
+        {
+            StartCoroutine(LoadLevelProcess());
+        }
+    }
+
+    void EndOfGame()
+    {
+        StartCoroutine(GetComponent<XMLImport>().DeleteMap());
+        Destroy(GameObject.FindGameObjectWithTag("Player"));
+        winPanel.gameObject.SetActive(true);
     }
 
 #region FadeEffects

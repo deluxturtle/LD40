@@ -15,7 +15,7 @@ public class Goal : Interactable {
 
     public override void DoInteract()
     {
-        gameDirector.EndLevelProcess();
+        StartCoroutine(gameDirector.EndLevelProcess());
         base.DoInteract();
     }
 }
