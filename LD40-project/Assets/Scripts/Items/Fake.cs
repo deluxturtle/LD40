@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class Fake : Interactable {
 
+    public float poisonSpeed = 15f;
     public GameObject duplicatedProp;
     List<GameObject> myDuplicates = new List<GameObject>();
 
@@ -11,6 +12,7 @@ public class Fake : Interactable {
     {
         isInteractable = false;
         InvokeRepeating("DuplicateSelf", 0, 0.25f);
+        GameObject.FindObjectOfType<GameDirector>().StartCountdown(poisonSpeed);
         base.DoInteract();
     }
 

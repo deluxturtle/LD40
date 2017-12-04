@@ -17,12 +17,15 @@ public class GameDirector : MonoBehaviour
     public TextAsset mapInformation;
     public AudioClip backgroundMusic;
     public List<TextAsset> levels = new List<TextAsset>();
+    public GameObject countDownTimer;
+    public GameObject goalText;
 
     int currentLevel = 0;
     XMLImport levelImporter;
     AudioSource audioSource;
 
-
+    float countDownTime = 15f;
+    bool timerGoing = false;
 
 
     //Start level
@@ -39,7 +42,7 @@ public class GameDirector : MonoBehaviour
         
     private void Start()
     {
-
+        countDownTimer.SetActive(false);
         audioSource = GetComponent<AudioSource>();
         mainCamera = Camera.main;
         levelImporter = GetComponent<XMLImport>();
@@ -51,6 +54,30 @@ public class GameDirector : MonoBehaviour
             audioSource.Play();
         }
     }
+
+    public void StartCountdown(float timeLeft)
+    {
+        if (timerGoing)
+            return;
+
+        timerGoing = true;
+        countDownTime = timeLeft;
+        countDownTimer.SetActive(true);
+        countDownTimer.GetComponent<Text>().text = countDownTime + "s till death..";
+        InvokeRepeating("DeductSecond", 0, 1);
+    }
+
+    void DeductSecond()
+    {
+        countDownTime--;
+        countDownTimer.GetComponent<Text>().text = countDownTime + "s till death..";
+        if(countDownTime < 0)
+        {
+            Application.Quit();
+        }
+    }
+
+
 
     public void StartLevelProcess()
     {
@@ -70,12 +97,17 @@ public class GameDirector : MonoBehaviour
 
     public IEnumerator EndLevelProcess()
     {
+        //Stop Timer
+        countDownTimer.SetActive(false);
+        timerGoing = false;
+        CancelInvoke("DeductSecond");
+
         currentLevel++;
         FadeOut(1);
         yield return new WaitForSeconds(1);
 
         //LoadNextLevel
-        if(levels.Count -1 < currentLevel)
+        if(levels.Count < currentLevel)
         {
             EndOfGame();
         }
@@ -126,6 +158,7 @@ public class GameDirector : MonoBehaviour
             yield return null;
         }
         fadeToBlackPanel.gameObject.SetActive(false);
+        goalText.SetActive(true);
     }
 #endregion
 

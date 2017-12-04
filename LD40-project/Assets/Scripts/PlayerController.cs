@@ -33,9 +33,7 @@ public class PlayerController : MonoBehaviour {
     void Update ()
     {
         HandleInput();
-
         
-
 
         if (running)
         {

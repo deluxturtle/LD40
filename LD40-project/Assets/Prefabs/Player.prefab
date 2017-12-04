@@ -274,9 +274,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   walkSpeed: 3
   runSpeed: 6
-  interactDistance: 2
-  toolTipCanvasPrefab: {fileID: 1047155528675182, guid: d25c1e9d47f4e334b9cfa333d23c019e,
-    type: 2}
+  interactDistance: 1
+  toolTip: {fileID: 0}
 --- !u!212 &212077222731402716
 SpriteRenderer:
   m_ObjectHideFlags: 1
